@@ -1,0 +1,11 @@
+Description=PXE Installation Registration Service
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+ExecStart=/usr/bin/python3 /opt/pxe/pxe-registration.py
+Restart=always
+User=root
+
+[Install]
+WantedBy=multi-user.target

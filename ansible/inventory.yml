@@ -1,0 +1,17 @@
+all:
+  children:
+    targets:
+      hosts:
+        node1:
+          ansible_host: 192.168.56.251
+        node2:
+          ansible_host: 192.168.56.252
+      
+    pxe_servers:
+      hosts:
+        pxe-server-01:
+          ansible_host: 
+  vars:
+    ansible_user: vagrant
+    ansible_ssh_private_key_file: /home/vagrant/.ssh/id_ed25519
+    ansible_ssh_common_args: '-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'

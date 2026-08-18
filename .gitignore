@@ -1,0 +1,20 @@
+# Vagrant and VirtualBox state
+.vagrant*
+
+# Ansible runtime artifacts
+*.retry
+ansible/facts/
+
+# Local configuration and credentials
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Logs and OS/editor files
+*.log
+.DS_Store
+Thumbs.db
+
+*.txt

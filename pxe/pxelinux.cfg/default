@@ -1,0 +1,16 @@
+DEFAULT menu.c32
+PROMPT 0
+TIMEOUT 50
+ONTIMEOUT ubuntu-24.04
+
+MENU TITLE Infrastructure Lifecycle Lab PXE
+
+LABEL ubuntu-24.04
+  MENU LABEL Install Ubuntu Server 24.04.4
+  KERNEL ubuntu-24.04/vmlinuz
+  APPEND initrd=ubuntu-24.04/initrd ip=dhcp autoinstall ds=nocloud-net;s=http://10.20.30.1/autoinstall/. url=http://10.20.30.1/ubuntu/ubuntu-24.04.4-live-server-amd64.iso
+
+
+LABEL local
+  MENU LABEL Boot from local disk
+  LOCALBOOT 0

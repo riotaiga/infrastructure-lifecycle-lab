@@ -1,0 +1,67 @@
+---
+- name: Baseline configuration for target nodes
+  hosts: targets
+  become: true
+
+  vars:
+    essential_packages:
+      - bash-completion
+      - ca-certificates
+      - htop
+      - vim-tiny
+      - curl
+      - wget
+      - jq
+      - net-tools
+      - iproute2
+      - iputils-ping
+      - sysstat
+      - lm-sensors
+      - tcpdump
+      - dnsutils
+      - ethtool
+      - lsof
+      - netcat-openbsd
+      - traceroute
+      - mtr-tiny
+      - lshw
+      - pciutils
+      - smartmontools
+      - nvme-cli
+      - chrony
+      - rsyslog
+      - unattended-upgrades
+      - needrestart
+      - unzip
+
+    # change it to true if it is a real server, VM will not have BMC (baseboard management controller chip)
+    install_ipmi_tools: false
+    ipmi_packages:
+      - ipmitool
+      - freeipmi-tools
+
+  tasks:
+    - name: Update apt package cache
+      ansible.builtin.apt:
+        update_cache: true
+        cache_valid_time: 3600
+
+    - name: Install essential diagnostic and admin tools
+      ansible.builtin.apt:
+        name: "{{ essential_packages }}"
+        state: present
+
+    - name: Install IPMI utilities on physical servers
+      ansible.builtin.apt:
+        name: "{{ ipmi_packages }}"
+        state: present
+      when: install_ipmi_tools | bool
+
+    - name: Configure local host name resolution for managed nodes
+      ansible.builtin.template:
+        src: hosts.j2
+        dest: /etc/hosts
+        owner: root
+        group: root
+        mode: '0644'
+

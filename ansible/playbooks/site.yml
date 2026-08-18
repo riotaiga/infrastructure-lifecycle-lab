@@ -1,0 +1,15 @@
+---
+- name: Verify managed Vagrant nodes
+  hosts: targets
+  become: true
+
+  tasks:
+    - name: Ensure curl is installed
+      ansible.builtin.apt:
+        name: curl
+        state: present
+        update_cache: true
+
+    - name: Show the managed node identity
+      ansible.builtin.debug:
+        msg: "{{ inventory_hostname }} is reachable at {{ ansible_host }}"

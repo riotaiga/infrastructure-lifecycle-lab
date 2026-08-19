@@ -194,11 +194,15 @@ Vagrant.configure("2") do |config|
       vb.customize [
         "modifyvm", :id,
         "--nic4", "none"
-      ]   
+      ]
 
-      # Network first for PXE install; registered MACs skip PXE and fall through to disk.
-      vb.customize ["modifyvm", :id, "--boot1", "net"]
-      vb.customize ["modifyvm", :id, "--boot2", "disk"]
+      # Legacy BIOS required for pxelinux.0 / dnsmasq PXE boot (UEFI cannot use this stack).
+      vb.customize ["modifyvm", :id, "--firmware", "bios"]
+
+      # Disk first, network second = PXE used once without registration.
+      # Empty disk fails → BIOS tries network → install. After install → disk boots.
+      vb.customize ["modifyvm", :id, "--boot1", "disk"]
+      vb.customize ["modifyvm", :id, "--boot2", "net"]
       vb.customize ["modifyvm", :id, "--boot3", "none"]
       vb.customize ["modifyvm", :id, "--boot4", "none"]
     end

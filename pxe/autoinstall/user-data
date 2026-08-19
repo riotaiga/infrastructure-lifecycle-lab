@@ -1,10 +1,11 @@
-#cloud-config (reove hostname in identity section to make installation easier)
+#cloud-config
 autoinstall:
   version: 1
 
   identity:
+    hostname: pxe-client
     username: vagrant
-    password: $6$SCzXb6Sse4bODXZF$l5d3KAAW/wBEIbZl1MFuTULPzKhuTvO6PX563KCYpZ9D9ZngBgCTie21I4STtu/E.1Sry4r4iLSCqpU6Y19.o1
+    password: '$6$SCzXb6Sse4bODXZF$l5d3KAAW/wBEIbZl1MFuTULPzKhuTvO6PX563KCYpZ9D9ZngBgCTie21I4STtu/E.1Sry4r4iLSCqpU6Y19.o1'
 
   ssh:
     install-server: true

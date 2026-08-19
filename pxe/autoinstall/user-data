@@ -28,5 +28,10 @@ autoinstall:
     - curtin in-target -- systemctl enable ssh
     - curtin in-target -- systemctl start ssh
     - curtin in-target -- touch /etc/pxe-installed
+    - |
+      MAC=$(ip -o link show | awk -F'link/ether ' '/ether/ {print $2; exit}')
+      curl -sf -X POST -H "Content-Type: application/json" \
+        -d "{\"mac\":\"${MAC}\"}" \
+        http://10.20.30.1:8080/install-complete
 
   shutdown: reboot

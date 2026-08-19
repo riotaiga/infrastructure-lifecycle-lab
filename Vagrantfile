@@ -119,21 +119,26 @@ Vagrant.configure("2") do |config|
       source: "./provision/pxe-registration.py",
       destination: "/tmp/pxe/pxe-registration.py"
 
-    control.vm.provision "shell", 
-      inline: "cp -a /tmp/pxe /opt/pxe/pxe-registration.py",
+    control.vm.provision "shell",
+      inline: "cp /tmp/pxe/pxe-registration.py /opt/pxe/pxe-registration.py",
       privileged: true
-    
-    control.vm.provisiom "file", 
+
+    control.vm.provision "file",
       source: "./provision/pxe-registration.service",
-      destination: "/etc/systemd/system/pxe-registration.service"
-    
+      destination: "/tmp/pxe-registration.service"
+
+    control.vm.provision "shell",
+      inline: "cp /tmp/pxe-registration.service /etc/systemd/system/pxe-registration.service",
+      privileged: true
+
     control.vm.provision "shell",
       inline: <<-SHELL
       chmod +x /opt/pxe/pxe-registration.py
       mkdir -p /var/lib/pxe/clients
+      touch /etc/dnsmasq.d/pxe-installed.conf
       systemctl daemon-reload
       systemctl enable --now pxe-registration.service
-      echo "=== PXE Registration Service is Ready.... ====
+      echo "=== PXE Registration Service is Ready ==="
     SHELL
 
     # remove pxe folder from tmp folder
@@ -150,15 +155,17 @@ Vagrant.configure("2") do |config|
   config.vm.define "pxe-client-01" do |pxe_client|
     pxe_client.vm.hostname = "pxe-client"
 
-    # Important: Override the VM to not create from the Bento Ubuntu Box. 
-    # Needs to be installed through PXE
-    pxe_client.vm.box = "dummy"
+    # Empty disk only — OS is installed over PXE, not from a Vagrant box image.
+    pxe_client.vm.box = "pace/empty"
+    pxe_client.vm.box_version = "0.1.0" 
+    pxe_client.vm.box_check_update = false
 
-    # increase time for PXE server... as it takes several minutes
-    config.vm.boot_timeout = 900
+    # No SSH agent on a blank VM; skip the usual boot/SSH readiness wait.
+    pxe_client.vm.communicator = "dummy"
+    pxe_client.vm.boot_timeout = 900
 
     # Dedicated visual PXE test client. Its operating system is installed from
-    # the PXE server, so Vagrant does not connect to or provision this VM. 
+    # the PXE server, so Vagrant does not connect to or provision this VM.
     pxe_client.vm.provider "virtualbox" do |vb|
       # This sets the name you see in the VirtualBox GUI
       vb.name = "pxe-client-01"
@@ -189,11 +196,9 @@ Vagrant.configure("2") do |config|
         "--nic4", "none"
       ]   
 
-      # Normal boot order AFTER Ubuntu is installed:
-      # 1. Local disk
-      # 2. PXE network
-      vb.customize ["modifyvm", :id, "--boot1", "disk"]
-      vb.customize ["modifyvm", :id, "--boot2", "net"]
+      # Network first for PXE install; registered MACs skip PXE and fall through to disk.
+      vb.customize ["modifyvm", :id, "--boot1", "net"]
+      vb.customize ["modifyvm", :id, "--boot2", "disk"]
       vb.customize ["modifyvm", :id, "--boot3", "none"]
       vb.customize ["modifyvm", :id, "--boot4", "none"]
     end

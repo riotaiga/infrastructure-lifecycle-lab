@@ -21,7 +21,9 @@ apt-get install -y apache2 ca-certificates curl dnsmasq libarchive-tools \
 
 install -d -m 0755 "${TFTP_ROOT}/pxelinux.cfg"
 install -d -m 0755 "${TFTP_ROOT}/ubuntu-24.04"
-install -d -m 0755 "${HTTP_ROOT}" "${PXE_STATE_DIR}"
+install -d -m 0755 "${HTTP_ROOT}" "${PXE_STATE_DIR}" /var/lib/pxe/clients
+touch /etc/dnsmasq.d/pxe-installed.conf
+chmod 0644 /etc/dnsmasq.d/pxe-installed.conf
 
 # Debian-family packages put these files in architecture-dependent locations.
 PXELINUX_BIN="$(find /usr/lib -type f -name pxelinux.0 -print -quit)"

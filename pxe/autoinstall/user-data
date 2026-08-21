@@ -1,10 +1,11 @@
-#cloud-config (reove hostname in identity section to make installation easier)
+#cloud-config
 autoinstall:
   version: 1
 
   identity:
+    hostname: pxe-client
     username: vagrant
-    password: $6$SCzXb6Sse4bODXZF$l5d3KAAW/wBEIbZl1MFuTULPzKhuTvO6PX563KCYpZ9D9ZngBgCTie21I4STtu/E.1Sry4r4iLSCqpU6Y19.o1
+    password: '$6$SCzXb6Sse4bODXZF$l5d3KAAW/wBEIbZl1MFuTULPzKhuTvO6PX563KCYpZ9D9ZngBgCTie21I4STtu/E.1Sry4r4iLSCqpU6Y19.o1'
 
   ssh:
     install-server: true
@@ -17,7 +18,7 @@ autoinstall:
   network:
     version: 2
     ethernets:
-      eth0:
+      enp0s3:
         dhcp4: true
 
   packages:
@@ -27,6 +28,17 @@ autoinstall:
   late-commands:
     - curtin in-target -- systemctl enable ssh
     - curtin in-target -- systemctl start ssh
+    - curtin in-target -- mkdir -p /home/vagrant/.ssh
+    - curtin in-target -- curl -sf http://10.20.30.1/autoinstall/control.pub -o /home/vagrant/.ssh/authorized_keys
+    - curtin in-target -- chown -R vagrant:vagrant /home/vagrant/.ssh
+    - curtin in-target -- chmod 700 /home/vagrant/.ssh
+    - curtin in-target -- chmod 600 /home/vagrant/.ssh/authorized_keys
+    - curtin in-target -- bash -c "echo 'vagrant ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/vagrant && chmod 440 /etc/sudoers.d/vagrant"
     - curtin in-target -- touch /etc/pxe-installed
+    - |
+      MAC=$(ip -o link show | awk -F'link/ether ' '/ether/ {print $2; exit}')
+      curl -sf -X POST -H "Content-Type: application/json" \
+        -d "{\"mac\":\"${MAC}\"}" \
+        http://10.20.30.1:8080/install-complete
 
   shutdown: reboot

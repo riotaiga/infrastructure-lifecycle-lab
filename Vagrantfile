@@ -109,9 +109,19 @@ Vagrant.configure("2") do |config|
       inline: "cp -a /opt/pxe/autoinstall/. /var/www/html/autoinstall/", 
       privileged: true
 
+    # Publish control's SSH public key for PXE clients during autoinstall.
+    control.vm.provision "shell",
+      inline: "cp /home/vagrant/.ssh/id_ed25519.pub /var/www/html/autoinstall/control.pub && 
+               chmod 644 /var/www/html/autoinstall/control.pub",
+      privileged: true
+
     # Configure DHCP/TFTP on the isolated PXE LAN.
     control.vm.provision "shell", 
       path: "provision/setup-pxe.sh"
+
+    # NAT/route PXE LAN client traffic through control for internet access.
+    control.vm.provision "shell",
+      path: "provision/setup-pxe-gateway.sh"
 
     # Install PXE registration service for the clients 
     # The purpose is to obtain PXE server MAC address 
